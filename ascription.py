@@ -1,21 +1,24 @@
 import os
 import sys
 import subprocess
-# First find all Python files below the root.
-py_files = []
 
+# Get the name of the CWD.
+cwd = os.getcwd().split("/")[-1]
+
+# Find all Python files below the root.
+py_files = []
 for root, dirs, files in os.walk("."):
     for file in files:
-        if file.endswith(".py") and file != "ascripion.py":
+        if file.endswith(".py") and file != "ascription.py":
             py_files.append({
-                'name': str(file),
-                'path': os.path.join(root, file),
+                'Name': str(file),
+                'Path': os.path.join(root, file),
                 'pkgs': []
                 })
  # Find all imports to files below root, and then get information about these
  # from PIP.
 for file in py_files:
-    lines = [line.rstrip('\n') for line in open(file['path'])]
+    lines = [line.rstrip('\n') for line in open(file['Path'])]
     for line in lines:
         if line[0:7] == "import ":
             file['pkgs'].append({
@@ -38,4 +41,17 @@ for file in py_files:
         except subprocess.CalledProcessError as e:
             print(e, "PIP has no info for this package. Package is likely a Python built in.")
 
-print(py_files)
+# Now all information has been collected, format it into a nice MD doc.
+f = open((cwd + "_attribution.md"), 'w')
+f.write(str("# " + cwd + " Attribution.  \n"))
+for file in py_files:
+    f.write(str("## " + file['Name'] + ":  \n"))
+    for pkg in file['pkgs']:
+        f.write(str("Package: " + pkg['Name'] + "  \n"))
+        f.write(str("Version: " + pkg['Version'] + "  \n"))
+        f.write(str("Summary: " + pkg['Summary'] + "  \n"))
+        f.write(str("Website: " + "[{0}]({0})".format(pkg['Home-page']) + "  \n"))
+        f.write(str("Author: " + pkg['Author'] + "  \n"))
+        f.write(str("Licence: " + "[{0}]({0})".format(pkg['Licence']) + "  \n\n"))
+
+f.close()
