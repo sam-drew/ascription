@@ -31,13 +31,17 @@ for file in py_files:
                 })
     for pkg in file['pkgs']:
         try:
-            pkg_info = subprocess.check_output([sys.executable, '-m', 'pip', 'show', pkg['Name']]).decode("utf-8")
+            pkg_info = subprocess.check_output([sys.executable, '-m', 'pip', 'show', pkg['Name'].split(".")[0]]).decode("utf-8")
             pkg_info = pkg_info.splitlines()
             for info in pkg_info:
                 # Split on the first colon.
                 split_info = info.split(": ", 1)
                 if split_info[0] in ['Name', 'Version', 'Summary', 'Home-page', 'Author', 'Licence']:
-                    pkg[split_info[0]] = split_info[1]
+                    if split_info[0] != 'Name':
+                        pkg[split_info[0]] = split_info[1]
+                    else:
+                        if "." not in pkg['Name']:
+                            pkg[split_info[0]] = split_info[1]
         except subprocess.CalledProcessError as e:
             print(e, "PIP has no info for this package. Package is likely a Python built in.")
 
