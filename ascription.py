@@ -59,3 +59,20 @@ for file in py_files:
         f.write(str("Licence: " + "[{0}]({0})".format(pkg['Licence']) + "  \n\n"))
 
 f.close()
+
+# Write a dependancy install script.
+imported_mods = []
+install_line = ""
+for file in py_files:
+    for pkg in file['pkgs']:
+        imported_mods.append(pkg['Name'].split(".")[0])
+
+for module in imported_mods:
+    if install_line != "":
+        install_line = install_line + " && pip install {0}".format(module)
+    else:
+        install_line = "pip install {0}".format(module)
+
+f = open((cwd + "_dependancy_install.sh"), "w")
+f.write(install_line)
+f.close()
